@@ -1,3 +1,5 @@
+#Rishbha Godara - Feb 24 2023 - Individual Programming 3 (Part 2-ext)
+
 import os
 from typing import Dict, List, Optional
 
@@ -22,12 +24,17 @@ class UCLAIP:
             The number of lines in the file.
         """
         try:
-            with open(self.fName, 'r') as infile: 
+            with open(self.fName, 'r') as infile:
                 lineList = infile.readlines()
-            return len(lineList)-1
+                try:
+                    assert len(lineList) >0
+                    return len(lineList)-1
+                except AssertionError:
+                    print('The file is empty.')
+                    return 0
         except Exception as e:
             raise Exception(f"Failed to read file: {e}")
-    
+        
     def countTerms(self) -> int:
         """
         Prompt the user to enter the number of terms they would like to add to the vocabulary list.
@@ -47,20 +54,16 @@ class UCLAIP:
             except Exception as e:
                 raise Exception(f"Failed to get number of terms: {e}")
     
-    def createDict(self, keys: List[str], values: List, default_value=None) -> dict:
+    def createDict(self) -> dict:
         """
         Create a dictionary from a list of keys and values. If the number of keys exceeds the number of values,
         the remaining keys will be paired with the default_value parameter.
-
-        Args:
-            keys (List[str]): A list of keys to be used in the dictionary.
-            values (List): A list of values to be used in the dictionary.
-            default_value: A default value to be used when there are more keys than values.
 
         Returns:
             dict: A dictionary where each key is paired with the corresponding value from the values list.
         """
         orgDict = {}
+        headers = False
         with open(self.fName, 'r') as f:
             for line in f:
                 fields = line.strip().split('\t')
@@ -68,7 +71,10 @@ class UCLAIP:
                     print(f"Skipping line '{line.strip()}' - invalid format")
                     continue
                 keys, values = fields
+                headers = True
                 orgDict[keys.strip()] = values.strip()
+        if not headers:
+            orgDict['term'] = 'definition'
         return orgDict
 
     def dictUpdate(self, cTerms: int, myDict: Dict[str,str]) -> Dict[str,str]:
@@ -101,12 +107,11 @@ class UCLAIP:
         Parameters:
         my_dict (dict): The dictionary to be printed
         """
-        try:
-            print ("\n".join(f'{term} - {definition}' for term, definition in myDict.items()))
-        except AttributeError:
-            print("The dictionary is empty.")
-        except KeyError:
-            print("The first key and value are not present in the dictionary.") 
+        myKeys = list(myDict.keys())
+        del myKeys[0]
+        myValues  = list(myDict.values())
+        del myValues[0]
+        print ("\n".join(f'{term} - {definition}' for term, definition in zip(myKeys,myValues)))
 
 
     def saveFile(self, myDict: Dict[str,str]):
@@ -120,6 +125,7 @@ class UCLAIP:
         with open(newFileName,'w',encoding='utf-8') as f:
             for term, definition in myDict.items():
                 f.write(f'{term}\t{definition}\n')
+        print('File saved!')
 
 
 # Main Program
